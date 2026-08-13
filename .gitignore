@@ -1,0 +1,17 @@
+# Environment
+.env
+
+# Node
+node_modules/
+client/dist/
+
+# Go
+server/bin/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

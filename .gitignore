@@ -1,17 +1,25 @@
-# Environment
-.env
+# Backend Go
+server/*.exe
+server/*.exe~
+server/*.dll
+server/*.so
+server/*.dylib
+server/*.test
+server/*.out
 
-# Node
-node_modules/
+# Frontend Node
+client/node_modules/
 client/dist/
+client/.env.local
+client/.env.*.local
 
-# Go
-server/bin/
-
-# OS
-.DS_Store
-Thumbs.db
+# Ambiente local
+.env
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+.DS_Store

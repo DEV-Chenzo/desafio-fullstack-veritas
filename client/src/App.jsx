@@ -28,7 +28,7 @@ function App() {
   const handleAddTask = async (title, description, status = "todo") => {
     try {
       const newTask = await taskService.create({ title, description, status });
-      setTasks([...tasks, newTask]);
+      setTasks((current) => [newTask, ...current]);
     } catch (err) {
       setError("Erro ao adicionar tarefa");
     }
@@ -37,7 +37,7 @@ function App() {
   const handleUpdateTask = async (id, updatedTask) => {
     try {
       const updated = await taskService.update(id, updatedTask);
-      setTasks(tasks.map((task) => (task.id === id ? updated : task)));
+      setTasks((current) => current.map((task) => (task.id === id ? updated : task)));
     } catch (err) {
       setError("Erro ao atualizar tarefa");
     }
@@ -46,7 +46,7 @@ function App() {
   const handleDeleteTask = async (id) => {
     try {
       await taskService.delete(id);
-      setTasks(tasks.filter((task) => task.id !== id));
+      setTasks((current) => current.filter((task) => task.id !== id));
     } catch (err) {
       setError("Erro ao deletar tarefa");
     }
@@ -60,7 +60,7 @@ function App() {
           ...task,
           status: newStatus,
         });
-        setTasks(tasks.map((t) => (t.id === taskId ? updated : t)));
+        setTasks((current) => current.map((t) => (t.id === taskId ? updated : t)));
       } catch (err) {
         setError("Erro ao mover tarefa");
       }
@@ -68,14 +68,20 @@ function App() {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto">
-      <header className="card p-8 mb-8 backdrop-blur-lg border border-white/20">
-        <h1 className="text-5xl font-bold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent mb-2">
-          📋 Veritas Mini Kanban
-        </h1>
-        <p className="text-gray-600 text-lg">
-          Gerencie suas tarefas de forma simples e intuitiva
-        </p>
+    <div className="w-full max-w-6xl mx-auto px-4 py-8 sm:px-6">
+      <header className="mb-8 flex flex-col gap-4 rounded-2xl bg-slate-950 px-6 py-7 text-white shadow-xl sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div>
+          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-indigo-300">Organize o seu trabalho</p>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            Veritas Mini Kanban
+          </h1>
+          <p className="mt-2 text-slate-300">
+            Um fluxo simples, focado e persistente para suas tarefas.
+          </p>
+        </div>
+        <div className="rounded-xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-slate-200">
+          {tasks.length} {tasks.length === 1 ? "tarefa no quadro" : "tarefas no quadro"}
+        </div>
       </header>
 
       {error && (

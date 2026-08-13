@@ -1,244 +1,119 @@
 # Veritas Mini Kanban
 
-Sistema de gestão de tarefas em estilo Kanban, com frontend em React + Vite e backend em Go.
+Aplicação fullstack para organizar tarefas em um fluxo Kanban. O projeto entrega CRUD completo, persistência em PostgreSQL, movimentação entre colunas e uma interface responsiva feita com React, Vite e Tailwind CSS.
 
-## Visão geral
+## Demonstração do fluxo
 
-O projeto tem como objetivo organizar tarefas em colunas de fluxo de trabalho, permitindo ao usuário:
+O diagrama completo está em [docs/user-flow.md](docs/user-flow.md). Em resumo: o usuário cria uma tarefa, acompanha-a nas colunas **A Fazer**, **Em Progresso** e **Concluído**, podendo editar, mover e excluir a qualquer momento.
 
-- criar novas tarefas
-- visualizar tarefas por status
-- editar o conteúdo da tarefa
-- excluir tarefas
-- mover tarefas entre colunas
-- acompanhar o progresso no formato Kanban
+## Tecnologias
 
-A aplicação foi desenvolvida como uma plataforma web simples, funcional e responsiva, seguindo a proposta de usar Tailwind CSS em vez de estilos padrão.
+| Camada | Escolha | Motivo |
+| --- | --- | --- |
+| Client | React + Vite + Tailwind CSS | Componentização, feedback imediato e interface responsiva. |
+| API | Go (net/http) | API leve, explícita e com poucas dependências. |
+| Dados | PostgreSQL 16 | Persistência relacional confiável e adequada ao domínio. |
+| Ambiente | Docker Compose | Banco reproduzível com um único comando. |
 
-## Stack tecnológica
-
-- Frontend: React 18, Vite, Tailwind CSS
-- Backend: Go 1.21
-- Rotas HTTP: gorilla/mux
-- CORS: rs/cors
-- Comunicação com API: Axios
-
-## Estrutura do projeto
+## Estrutura
 
 ```text
-veritas-mini-kanban/
-├── client/
-│   ├── src/
-│   ├── package.json
-│   ├── vite.config.js
-│   ├── tailwind.config.js
-│   ├── postcss.config.js
-│   └── index.html
-├── server/
-│   ├── main.go
-│   ├── go.mod
-│   └── kanban.exe
-├── README.md
-└── .gitignore
+.
+├── client/             # Interface React (detalhes em docs/client.md)
+├── server/             # API REST em Go (detalhes em docs/server.md)
+│   └── internal/       # Configuração, banco, HTTP e domínio de tarefas
+├── docs/               # Documentação complementar
+│   ├── client.md       # Client React
+│   ├── server.md       # API Go e PostgreSQL
+│   └── user-flow.md    # Diagrama e decisões de experiência
+├── docker-compose.yml  # PostgreSQL local
+└── .env.example        # Variáveis da API
 ```
-
-## Pré-requisitos
-
-Antes de executar o projeto, confirme que você possui:
-
-- Node.js 18 ou superior
-- npm
-- Go 1.21 ou superior
 
 ## Como executar
 
-### 1) Backend
+Pré-requisitos: Docker Desktop, Go 1.22+ e Node.js 18+.
 
-Na pasta `server`:
+1. Inicie o banco de dados na raiz do projeto:
+
+```bash
+docker compose up -d
+```
+
+2. Em outro terminal, inicie a API:
 
 ```bash
 cd server
-go run main.go
+go mod download
+go run .
 ```
 
-Se preferir usar o binário já compilado:
-
-```bash
-cd server
-./kanban.exe
-```
-
-### 2) Frontend
-
-Na pasta `client`:
+3. Em um terceiro terminal, inicie o cliente:
 
 ```bash
 cd client
 npm install
-npm run dev -- --host 0.0.0.0
+npm run dev
 ```
 
-Acesso local:
+Abra `http://localhost:5173`. A API estará em `http://localhost:8080/api`; na inicialização ela cria a tabela `tasks` automaticamente, de forma idempotente.
 
-- Frontend: http://localhost:5173
-- API: http://localhost:8080
+### Configuração opcional
 
-## Funcionalidades implementadas
+O backend usa por padrão `postgres://kanban:kanban@127.0.0.1:5433/kanban?sslmode=disable`. A porta `5433` evita conflito com uma instalação PostgreSQL local que possa estar usando a porta padrão `5432`. Consulte também [docs/server.md](docs/server.md) para o detalhamento da API. Para alterar, copie `.env.example` e defina as variáveis no ambiente antes de executar o Go:
 
-### Kanban por colunas
+- `DATABASE_URL`: conexão PostgreSQL.
+- `PORT`: porta da API (padrão `8080`).
+- `CORS_ORIGIN`: origem permitida para o cliente (padrão `http://localhost:5173`).
 
-A aplicação organiza as tarefas em 3 status:
+Para apontar o client para outra API, crie `client/.env.local` com `VITE_API_URL=http://localhost:8080/api`.
 
-- Todo
-- Doing
-- Done
+## Funcionalidades
 
-### CRUD completo
-
-- criar tarefa
-- listar tarefas
-- atualizar tarefa
-- excluir tarefa
-- mudar status entre colunas
-
-### interface e UX
-
-- layout responsivo
-- cards de tarefa com ações rápidas
-- edição inline
-- feedback de carregamento
-- mensagens de erro
-- estilo visual consistente com Tailwind
+- Criar tarefas com título obrigatório, descrição opcional e coluna inicial.
+- Listar tarefas persistidas após recarregar a página ou reiniciar a API.
+- Editar título e descrição diretamente no card.
+- Mover tarefas entre os estágios pelos controles de direção.
+- Excluir tarefas.
+- Indicador de quantidade por coluna, estados vazios e mensagens de erro.
 
 ## API REST
 
-A API do backend expõe os seguintes endpoints:
+Documentação específica do backend: [docs/server.md](docs/server.md).
 
-### GET /api/health
+| Método | Rota | Descrição |
+| --- | --- | --- |
+| `GET` | `/api/health` | Verifica conexão da API e do banco. |
+| `GET` | `/api/tasks` | Lista tarefas por data de criação. |
+| `POST` | `/api/tasks` | Cria uma tarefa. |
+| `GET` | `/api/tasks/{id}` | Busca uma tarefa. |
+| `PUT` | `/api/tasks/{id}` | Atualiza título, descrição e status. |
+| `DELETE` | `/api/tasks/{id}` | Remove uma tarefa. |
 
-Retorna o estado do servidor.
-
-Exemplo de resposta:
-
-```json
-{
-  "status": "ok"
-}
-```
-
-### GET /api/tasks
-
-Retorna todas as tarefas cadastradas.
-
-### POST /api/tasks
-
-Cria uma nova tarefa.
-
-Body:
+Exemplo de criação:
 
 ```json
 {
-  "title": "Estudar React",
-  "description": "Revisar componentes e hooks",
+  "title": "Preparar apresentação",
+  "description": "Consolidar os resultados da semana",
   "status": "todo"
 }
 ```
 
-### GET /api/tasks/{id}
+Os valores aceitos de `status` são `todo`, `doing` e `done`. O backend valida título, status, JSON e identificador; erros retornam JSON com a propriedade `error`.
 
-Retorna uma tarefa específica.
+## Decisões de arquitetura
 
-### PUT /api/tasks/{id}
+- **Tabela única para o MVP:** tarefas são o único agregado do domínio; evitar relações prematuras mantém a solução legível.
+- **Migração na inicialização:** torna o primeiro uso simples, sem comprometer a idempotência da execução local.
+- **Atualização completa (`PUT`):** o client sempre envia o estado integral e elimina ambiguidades entre campo vazio e campo ausente.
+- **Movimentação por botões:** mantém o fluxo claro, acessível por teclado e funcional em desktop e mobile sem depender de drag and drop.
+- **Separação por componentes:** `KanbanBoard`, `Column` e `TaskCard` mantêm responsabilidades visuais pequenas; `App` concentra a sincronização com a API.
 
-Atualiza uma tarefa existente.
+## Encerrando o ambiente
 
-Exemplo:
-
-```json
-{
-  "title": "Atualizar README",
-  "description": "Documentar fluxo e setup",
-  "status": "doing"
-}
+```bash
+docker compose down
 ```
 
-### DELETE /api/tasks/{id}
-
-Remove uma tarefa.
-
-## User flow
-
-```mermaid
-flowchart TD
-    A[Usuário abre a plataforma] --> B[Visualiza as colunas Todo, Doing e Done]
-    B --> C{Deseja criar tarefa?}
-    C -- Sim --> D[Preenche título, descrição e status]
-    D --> E[Click em Adicionar Tarefa]
-    E --> F[Tarefa aparece na coluna correta]
-    B --> G{Deseja editar tarefa?}
-    G -- Sim --> H[Click em Editar]
-    H --> I[Altera título ou descrição]
-    I --> J[Click em Salvar]
-    J --> F
-    B --> K{Deseja mover tarefa?}
-    K -- Sim --> L[Click em seta anterior ou próxima]
-    L --> M[Tarefa muda de coluna]
-    M --> F
-    B --> N{Deseja excluir tarefa?}
-    N -- Sim --> O[Click no ícone de lixeira]
-    O --> P[Tarefa removida da lista]
-    P --> B
-    F --> Q[Fluxo continua até concluir o trabalho]
-```
-
-### Fluxo principal do uso
-
-1. O usuário acessa a plataforma e visualiza as colunas do Kanban.
-2. Cria uma tarefa com título, descrição opcional e status inicial.
-3. A tarefa aparece na coluna correta.
-4. Pode editar o conteúdo diretamente na tarefa.
-5. Pode mover a tarefa para o próximo ou anterior estágio do processo.
-6. Pode excluir a tarefa quando ela não for mais necessária.
-7. O processo continua em ciclos de organização e acompanhamento.
-
-## Arquitetura da solução
-
-### Frontend
-
-O frontend é responsável por:
-
-- renderizar a interface Kanban
-- capturar os dados do formulário
-- consumir os endpoints da API
-- atualizar a visualização após cada ação
-
-### Backend
-
-O backend é responsável por:
-
-- expor endpoints REST
-- armazenar tarefas em memória
-- validar entrada básica
-- responder com JSON
-
-### Persistência
-
-Atualmente, a aplicação usa armazenamento em memória no servidor. Isso é suficiente para ambiente de desenvolvimento, testes locais e demonstração.
-
-## Observações importantes
-
-- O projeto foi pensado para execução local.
-- O CORS está configurado para permitir comunicação entre frontend e backend em localhost.
-- O frontend usa proxy do Vite para evitar problemas de comunicação com a API.
-
-## Próximos passos possíveis
-
-- persistência em banco de dados
-- autenticação de usuários
-- drag-and-drop visual
-- filtros por status ou prioridade
-- deploy em ambiente web
-
-## Licença
-
-Este projeto foi desenvolvido para fins de estudos e demonstração local.
+Os dados permanecem no volume `postgres_data`. Para removê-los intencionalmente, execute `docker compose down -v`.

@@ -13,6 +13,9 @@ client/dist/
 client/.env.local
 client/.env.*.local
 
+# Ambiente local
+.env
+
 # IDE
 .vscode/
 .idea/

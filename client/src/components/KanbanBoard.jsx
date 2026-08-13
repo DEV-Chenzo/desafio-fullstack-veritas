@@ -59,25 +59,27 @@ function KanbanBoard({
 
         <form onSubmit={handleAddTask} className="space-y-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-            <input
-              type="text"
-              placeholder="Título da tarefa..."
-              value={newTaskTitle}
-              onChange={(e) => setNewTaskTitle(e.target.value)}
-              className="input-field flex-1"
-              required
-            />
-            <textarea
-              placeholder="Descrição (opcional)"
-              value={newTaskDesc}
-              onChange={(e) => setNewTaskDesc(e.target.value)}
-              rows="2"
-              className="input-field flex-1 resize-none"
-            />
+            <div className="flex flex-col gap-2 lg:w-2/3">
+              <input
+                type="text"
+                placeholder="Título da tarefa..."
+                value={newTaskTitle}
+                onChange={(e) => setNewTaskTitle(e.target.value)}
+                className="input-field flex-1"
+                required
+              />
+              <textarea
+                placeholder="Descrição (opcional)"
+                value={newTaskDesc}
+                onChange={(e) => setNewTaskDesc(e.target.value)}
+                rows="2"
+                className="input-field flex-1 resize-none"
+              />
+            </div>
             <select
               value={newTaskStatus}
               onChange={(e) => setNewTaskStatus(e.target.value)}
-              className="input-field min-w-[170px]"
+              className="input-field min-w-[170px] max-w-[180px]"
             >
               {statuses.map((status) => (
                 <option key={status} value={status}>
